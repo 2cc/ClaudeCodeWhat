@@ -36,6 +36,7 @@
 	- [/config](!config.md) — те же настройки через меню.
 - git и ревью
 	- [git](git.md) — коммиты, ветки, PR руками Claude.
+	- [/diff](!diff.md) — посмотреть изменения, в том числе по ходам Claude.
 	- [code review](code%20review.md) — проверить изменения перед PR.
 	- [worktrees](worktrees.md) — несколько сессий в одном репозитории.
 	- [Github integration](Github%20integration.md) — `@claude` в issue и PR.
