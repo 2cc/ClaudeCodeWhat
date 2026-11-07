@@ -52,6 +52,9 @@
 	- Тоже граф проекта. Код разбирает локально, а документы и картинки — через LLM: индексация занимает минуты, стоит денег, обновлять её надо вручную.
 	- С Claude Code интегрируется отдельной командой. Без неё Claude графом не пользуется и ищет как обычно.
 	- В том же тесте токенов на 18% меньше, но при планировании граф почти не помог: Claude сам так сказал и перешёл на обычный поиск.
+- Serena MCP и подобные оптимизаторы
+	- Кирилл Мокевнин: по отзывам на Reddit токенов с ними уходит больше, а не меньше; такие оптимизации и так попадут в сами агенты. Замеров не привёл.
+	- LSP не заменит grep: не видит переводы, серверные шаблоны, динамическую загрузку. Поэтому агенты ищут через grep и glob.
 - OpenCode
 	- Открытый терминальный агент для кода, аналог Claude Code и Codex CLI. Работает с любыми моделями: Codex по подписке ChatGPT, ключи API, бесплатные и локальные.
 	- Claude — только по ключу API: подписку Pro/Max Anthropic в сторонние агенты не пускает.
@@ -88,3 +91,4 @@
 	- [Graphify vs CodeGraph: I Tested Both With Claude Code | youtube The Gray Cat](https://www.youtube.com/watch?v=Xr2MjfirjqA) — CodeGraph, Graphify, цифры теста
 	- [OpenCode: полный разбор open-source альтернативы Codex CLI и Claude Code | youtube Антон Ларичев](https://www.youtube.com/watch?v=iMy7jYzGeEo) — OpenCode, локальные модели
 	- [OpenCode убил Claude Code? Почему я перехожу на Open Code | youtube NullsCode](https://www.youtube.com/watch?v=KSEfr8h-tH8) — бесплатные провайдеры, платформы
+	- [Системный подход к работе с ИИ 2026 для разработчиков | youtube Hexlet](https://www.youtube.com/watch?v=N3cStdCUI-0) — Serena, LSP против grep
