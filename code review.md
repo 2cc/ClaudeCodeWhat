@@ -102,6 +102,7 @@
 	- Одни и те же ложные срабатывания — объяснить в [CLAUDE.md](_CLAUDE.md.md), для ревью на GitHub — в `REVIEW.md`.
 	- Ревью на GitHub для пробы — запуск при открытии PR или вручную: «после каждого push» умножает цену на число push.
 	- `/security-review` — перед PR, который трогает авторизацию, ввод пользователя, секреты.
+	- PR, который не влияет на прод, можно не смотреть самому: skill оставляет комментарии, пишет автору и каждые 5–10 минут проверяет обновления, когда готово — approve. Так у Темирулана Мусаева в DeepInfra.
 	- Зелёные тесты агента не значат, что крайние случаи работают. Отдельно попросить другого агента прогнать экстремальные синтетические данные: так находятся ошибки, которые проверки самого агента пропускают.
 		- Андрей Бреслав: в критичных проектах гонять mutation testing, порог mutation score записать в `AGENTS.md` и skills. Медленно, но так видны тесты агента, которые ничего не проверяют.
 	- Смотреть не только баги, но и решения агента о данных: что с чем связано и по какому ключу.
@@ -114,3 +115,4 @@
 	- [Graphify vs CodeGraph: I Tested Both With Claude Code | youtube The Gray Cat](https://www.youtube.com/watch?v=Xr2MjfirjqA) — аудит крайних случаев другим агентом
 	- [Andrej Karpathy: From Vibe Coding to Agentic Engineering w/ Stephanie Zhan | youtube Sequoia Capital](https://www.youtube.com/watch?v=96jN2OCOfLs) — ключ привязки данных, раздутый код агентов
 	- [Как писать код с AI-агентами? | youtube Константин Доронин](https://www.youtube.com/watch?v=x0j1kcagoXg) — mutation testing, мёртвый код
+	- [Темирулан Мусаев, Deep Infra: Claude Code, олимпиады по информатике и математике, зоопарк ИИ-моделей | youtube nFactorial Podcast](https://www.youtube.com/watch?v=ZQexg7-EGAU) — skill, который ведёт PR до approve

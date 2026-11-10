@@ -57,28 +57,66 @@
 	- LSP не заменит grep: не видит переводы, серверные шаблоны, динамическую загрузку. Поэтому агенты ищут через grep и glob.
 - OpenCode
 	- Открытый терминальный агент для кода, аналог Claude Code и Codex CLI. Работает с любыми моделями: Codex по подписке ChatGPT, ключи API, бесплатные и локальные.
+	- Разным агентам — разные модели: дорогую на реализацию и багфикс, дешёвую на рутину. Как `model` у [субагентов](subagents.md) в Claude Code.
 	- Claude — только по ключу API: подписку Pro/Max Anthropic в сторонние агенты не пускает.
 	- Установка: `brew`, `curl`, `npm` или `bun`.
 	- Кроме TUI — десктоп-приложение (бета, есть под Linux), веб-интерфейс и расширение для VS Code и Cursor.
+	- `opencode stats` — токены и стоимость по сессиям.
+	- `opencode web --port 4096` — интерфейс в браузере. Открываешь в сеть — задать `OPENCODE_SERVER_PASSWORD`, иначе вход без пароля.
 	- Бесплатные модели есть из коробки. Платные у самого OpenCode: Zen — оплата за использование, Go — подписка $10.
+		- Без регистрации, из облака OpenCode: Big Pickle (по умолчанию), MiniMax M2.5, NVIDIA Nemotron 3 Super. CodeSpace: MiniMax M2.5 лучше для UI — довод один баг в демо.
+			- Бесплатные модели могут собирать промпты и ответы — рабочий и конфиденциальный код в них не отправлять.
+			- Фиксированных лимитов нет: режут по нагрузке на сервис и по IP. Годится для хобби.
+		- Go: первый месяц $5, дальше $10. Открытые модели GLM-5, Kimi K2.5, Qwen 3.5 Plus, лимиты на 5 часов, неделю и месяц: на дешёвой Qwen запросов больше, на GLM-5 меньше.
 	- Дешёвые и бесплатные провайдеры — подключаются через `/connect`.
 		- Cerebras — бесплатный тариф, 1 млн токенов в день. Ключ: cerebras.ai → API Keys.
 		- OpenRouter — бесплатные модели: без пополнения 50 запросов в день, после покупки кредитов на $10 — 1000. NullsCode называет $5.
 		- GLM coding plan (Zhipu, GLM 4.7) — NullsCode: от $3 в месяц и работает хорошо. Довод — один лендинг в демо.
 		- Подписка Google Antigravity — неофициальный плагин `opencode-antigravity-auth`, вход `opencode auth login` → Google OAuth. Даёт Gemini 3 Flash и другие модели Google.
+		- Ollama Cloud — `ollama launch opencode --model gemma4:31b-cloud`. CodeSpace: на бесплатном тарифе медленно — ответ на «hi» ~2 мин, дальше от 34 с до 4 мин. Gemma 4 на OpenRouter free ответила за ~9 с, но первая попытка упала на rate limit. По одному прогону.
 	- Аналоги Claude Code
 		- `Tab` — режимы Build и Plan, см. [режимы](режимы.md).
 		- `Ctrl+P` — палитра команд, те же команды и через `/`.
 		- `/diff` с источником last turn — правки только последнего хода, см. [/diff](!diff.md).
 		- Fork conversation — новая сессия с контекстом до выбранного сообщения, как `/branch` в [/resume](!resume.md).
+		- Undo/redo правок — на основе git, аналог [/rewind](!rewind.md).
+	- `opencode run "…"` — запуск без интерактива для скриптов и CI. `--model` выбирает модель, `--continue` продолжает последнюю сессию.
+	- Ревью PR на GitHub: `opencode github install`, workflow с промптом ревью, секрет `OPENCODE_API_KEY`. Аналог [Github integration](Github%20integration.md), но с любой моделью. Есть и вариант для GitLab CI.
 	- Что берёт из Claude Code
 		- [Skills](skills.md) из `~/.claude/skills/` видит сразу, формат тот же.
 		- [MCP](MCP.md)-серверы, настроенные для Claude Code, подключает сам.
 		- Инструкции — из `AGENTS.md`, см. [AGENTS.md](_AGENTS.md.md).
+	- Свои агенты и команды — Markdown-файлы в `.opencode/agents/` и `.opencode/commands/`, глобально — в `~/.config/opencode/`. Имя файла = имя агента или команды.
+		- Агент вызывается `@имя`, команда — `/имя аргументы`. Мастер для агента — `opencode agent create`.
+		- В секции `agent` у агента задаётся `temperature`: 0–0.2 — анализ и план, 0.3–0.5 — обычная разработка, 0.6–1 — брейншторм.
+		- Без `"mode"` агент доступен и основным, и сабагентом; `"mode": "subagent"` — только через `@`.
+		- Для модели можно завести свой вариант, например `debug`: высокий reasoning effort и низкая text verbosity — дольше думает, коротко отвечает.
 	- Свой провайдер или прокси — секция `provider` в `opencode.json`: пакет `@ai-sdk/anthropic` для Claude-совместимого API, base URL, ключ, список моделей.
 		- Base URL — с `/v1` на конце, без него запросы не проходят.
-	- Локальные модели — через Ollama или LM Studio. Ollama сама предлагает прописать модель в конфиг OpenCode.
+		- Любой OpenAI-совместимый API — пакет `@ai-sdk/openai-compatible`.
+	- [Локальные модели](локальные%20модели.md) — через Ollama или LM Studio. Ollama сама предлагает прописать модель в конфиг OpenCode.
+		- `ollama launch opencode` — настраивает OpenCode на модель из Ollama и запускает его. С `--config` только настраивает. `opencode.json` не перезаписывает. Так же запускается Claude Code: `ollama launch claude --model …`.
 		- Антон Ларичев: Qwen 3.5 9B (~6 ГБ RAM) на старом MacBook так и не ответила на «привет». Нужны видеокарта и 32–64 ГБ RAM, и даже так до GPT 5.5 и Opus далеко. Это вывод из одной попытки.
+	- Октябрь 2026: взломали OpenCode Console — корпоративную надстройку с политиками команды, учётом и бюджетами. У 1,4% её пользователей увели ключи API, потери до $700–1400.
+		- Ключи ушли на дистилляцию: из фронтир-моделей выкачивают рассуждения (thinking), чтобы учить на них свои. Провайдеры такие ключи отзывают и банят аккаунт владельца.
+- Pi
+	- Минималистичный открытый агент: из коробки 4 инструмента (чтение, запись и правка файлов, bash), MCP, скиллы и сабагенты — плагинами.
+	- Алексей Голобурдин: агенту много не нужно — его самописный харнесс на 99 строк Python на [локальной модели](локальные%20модели.md) за ~50 итераций собирает FastAPI-проект с CRUD, миграциями Alembic и тестами.
+- Модели других компаний
+	- Kimi K3.1 Pro
+		- Открытая модель Moonshot, веса обещали выложить 4 ноября 2026. Свой агент — Kimi Code.
+		- По цене: вдвое дешевле Opus 5.5, в 5 раз дешевле GPT-6 Astra.
+		- Продуктивный Совет: лучшая из открытых моделей, но до Opus 5.5 далеко. Годится как дешёвая модель для автоматизаций через API. Вывод из пяти тестов, каждый по одному прогону.
+	- Artificial Analysis — независимый индекс интеллекта моделей и цена прогона его заданий: сравнить модели разных компаний по уму и цене.
+		- Ноябрь 2026, новая методика: впереди Opus 5.5, GPT-6 Astra Max, GPT-6.1 Sol и новая модель Google (59 баллов). У Kimi K3.1 Pro 46 баллов, это лучшая из китайских открытых моделей.
+		- Прогнать задания индекса на Kimi в 2–3 раза дешевле, чем на американских моделях.
+	- Сравнение: Продуктивный Совет, слепой тест на xhigh, каждая модель в своём агенте (Claude Code, Codex, Kimi Code), по одному прогону.
+		- Opus 5.5 сильнее в анимации, заставке канала, сцене в Blender и браузерной 3D-игре.
+		- GPT-6 Astra лучше рисует мышкой через computer use.
+		- Kimi K3.1 Pro в творческих задачах близка к Astra и дешевле всех: в тесте с Paint меньше $2 против $6–7 у Opus и Astra.
+	- CodeSpace: Codex сначала читает проект (структуру, паттерны), потом пишет — медленнее Claude Code, но точнее в отладке сложных багов. Аргументов не привёл.
+	- Одна и та же открытая модель у разных провайдеров отвечает по-разному: Темирулан Мусаев — у кого-то хуже на китайском. На OpenRouter можно выбрать не только модель, но и провайдера.
+	- DeepSeek Flash — $0,08 / $0,18 за миллион токенов на вход и на выход. Темирулан Мусаев: дешевле на рынке нет, аргументов не привёл.
 - Советы
 	- herdr нужен, когда агентов больше одного. Для одной сессии Claude Code хватает обычного терминала.
 	- Сразу ставить интеграцию `herdr integration install claude`: без неё статусы угадываются и бывают неточными.
@@ -87,8 +125,18 @@
 	- Граф кода пробовать на большом проекте, где Claude много ищет. Начинать с CodeGraph: индекс бесплатный и обновляется сам.
 	- Поставил такой инструмент — проверить по вызовам в плане, что Claude правда им пользуется, а не ищет `grep`.
 	- OpenCode держать запасным агентом на случай проблем с подпиской Claude: skills и MCP переедут сами.
+	- ИИздец: две подписки по $200 (Claude и Codex) на одном сервере — сессии видят друг друга и обмениваются сообщениями. Дизайн, монтаж, motion у него на моделях OpenAI, часть технических задач — только на Claude. Сравнений не привёл.
 - Источники
 	- [Graphify vs CodeGraph: I Tested Both With Claude Code | youtube The Gray Cat](https://www.youtube.com/watch?v=Xr2MjfirjqA) — CodeGraph, Graphify, цифры теста
 	- [OpenCode: полный разбор open-source альтернативы Codex CLI и Claude Code | youtube Антон Ларичев](https://www.youtube.com/watch?v=iMy7jYzGeEo) — OpenCode, локальные модели
 	- [OpenCode убил Claude Code? Почему я перехожу на Open Code | youtube NullsCode](https://www.youtube.com/watch?v=KSEfr8h-tH8) — бесплатные провайдеры, платформы
 	- [Системный подход к работе с ИИ 2026 для разработчиков | youtube Hexlet](https://www.youtube.com/watch?v=N3cStdCUI-0) — Serena, LSP против grep
+	- [Я провёл в Claude Code 6000+ часов. Тут всё, что тебе нужно | youtube ИИздец](https://www.youtube.com/watch?v=ph3o98HCD3k) — две подписки на одном сервере
+	- [Kimi K3.1 против Opus 5,5 и GPT-6 Astra – Я ВСЕ ПРОВЕРИЛ | youtube Продуктивный Совет](https://www.youtube.com/watch?v=WPn3IeAzdoE) — Kimi K3.1 Pro, Artificial Analysis, сравнение моделей
+	- [Будущее локальных LLM – Алексей Голобурдин, PythoNN | youtube Никита Соболев](https://www.youtube.com/watch?v=qJTVfcGEsW0) — Pi, минимальный харнесс
+	- [Claude Code vs Codex vs Cursor… but OpenCode Wins (Here’s Why). Full setup | youtube CodeSpace](https://www.youtube.com/watch?v=YnCkN94Cp7U) — модели по агентам, бесплатные модели OpenCode, undo на git, Codex в отладке
+	- [OpenCode Crash Course — The Open Source Alternative to Codex & Claude Code | youtube CodeSpace](https://www.youtube.com/watch?v=Z-_XZV-TZ0A) — свои агенты и команды, opencode run, ревью PR через GitHub Action, stats, веб-интерфейс, openai-compatible
+	- [OpenCode got hacked | youtube The PrimeTime](https://www.youtube.com/watch?v=9OahTki4cPA) — взлом OpenCode Console, дистилляция на украденных ключах
+	- [Gemma 4 + OpenCode Setup | Run For Free On Openrouter Cloud or Locally with Ollama | youtube CodeSpace](https://www.youtube.com/watch?v=NaL18_hmu4A) — ollama launch, Ollama Cloud
+	- [The Ultimate Beginner Guide to OpenCode | youtube CodeSpace](https://www.youtube.com/watch?v=ed0ywAJS5KQ) — приватность бесплатных моделей, состав Go, temperature и варианты моделей у агентов
+	- [Темирулан Мусаев, Deep Infra: Claude Code, олимпиады по информатике и математике, зоопарк ИИ-моделей | youtube nFactorial Podcast](https://www.youtube.com/watch?v=ZQexg7-EGAU) — разница между провайдерами, цена DeepSeek Flash
